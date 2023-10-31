@@ -1,0 +1,8 @@
+services:
+  asdw:
+    build: .
+    volumes:
+      - ./data:/data
+    env_file:
+      - env/asdw.env
+    restart: always
