@@ -43,7 +43,12 @@ announcement_time_class = 'text-left'
 announcements_sent = False
 
 s = Session()
-s.headers.update({'If-Modified-Since': get_formatted_last_announcement_time()})
+s.headers.update(
+    {
+        'If-Modified-Since': get_formatted_last_announcement_time(),
+        'User-Agent': 'ASDW Announcement Notifier v1.0'
+    }
+)
 response = s.get(asdw_announcement_url)
 announcement_queue = []
 
