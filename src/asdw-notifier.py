@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 from bs4 import BeautifulSoup
 from datetime import datetime as dt
@@ -8,6 +9,12 @@ from hashlib import sha256
 from pathlib import Path
 from requests import Session
 from time import sleep
+
+def format_announcement(announcement):
+    time = announcement.find(class_=announcement_time_class).text.strip()
+    content = announcement.find(announcement_body_selector).text.strip()
+    formatted_content = re.sub(r'\n\s*\n', '\n', content, flags=re.MULTILINE)
+    return time + "\n" + formatted_content
 
 def get_formatted_last_announcement_time():
     time_obj = dt.utcfromtimestamp(get_last_announcement_time())
@@ -22,11 +29,6 @@ def get_last_announcement_time():
             if modified_time > lastrun:
                 lastrun = modified_time
     return lastrun
-
-def send_announcement_notification(time, content):
-    logging.info('Sending ASDW announcement notification')
-    webhook = SyncWebhook.from_url(discord_webhook_url)
-    webhook.send('ASDW: ' + time + "\n" + content)
 
 logging.basicConfig(level=int(os.environ.get('LOG_LEVEL')))
 
@@ -43,6 +45,7 @@ announcements_sent = False
 s = Session()
 s.headers.update({'If-Modified-Since': get_formatted_last_announcement_time()})
 response = s.get(asdw_announcement_url)
+announcement_queue = []
 
 if response.ok:
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -53,15 +56,16 @@ if response.ok:
         if not os.path.isfile(cache_file_path):
             with open(cache_file_path, "w") as cache_file:
                 cache_file.writelines(announcement.text.strip())
-            send_announcement_notification(
-                announcement.find(class_=announcement_time_class).text.strip(),
-                announcement.find(announcement_body_selector).text.strip()
-            )
-            announcements_sent = True
+                announcement_queue.append(format_announcement(announcement))
         else:
             logging.debug('ASDW Announcement already sent: ' + announcement_hash)
 
-if not announcements_sent:
+if announcement_queue:
+    discord_webhook = SyncWebhook.from_url(discord_webhook_url)
+    for announcement_content in announcement_queue:
+        logging.info('Sending ASDW announcement notification')
+        discord_webhook.send(announcement_content)
+else:
     logging.info('No new ASDW announcements!')
 
 sleep(int(os.environ.get('POLL_TIME')))
