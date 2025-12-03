@@ -30,7 +30,11 @@ def get_last_announcement_time():
                 lastrun = modified_time
     return lastrun
 
-logging.basicConfig(level=int(os.environ.get('LOG_LEVEL')))
+logging.basicConfig(
+    level=int(os.environ.get('LOG_LEVEL')),
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%dT%H:%M:%S'
+)
 
 application_data_dir = os.environ.get('APPLICATION_DATA_DIR')
 asdw_announcement_url = os.environ.get('ASDW_ANNOUNCEMENT_URL')
