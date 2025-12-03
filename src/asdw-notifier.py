@@ -54,6 +54,16 @@ application_data_dir = config.application_data_dir
 asdw_announcement_url = config.asdw_announcement_url
 discord_webhook_url = config.discord_webhook_url
 
+# Ensure cache directory exists
+try:
+    os.makedirs(application_data_dir, exist_ok=True)
+except Exception as e:
+    logging.error(f'Failed to create cache directory {application_data_dir}: {e}')
+    print(f"ERROR: Cannot create cache directory: {e}", file=sys.stderr)
+    print("Sleeping 60 seconds before exit to prevent rapid restart loop...", file=sys.stderr)
+    sleep(60)
+    sys.exit(1)
+
 announcement_selector = 'article'
 announcement_body_selector = 'p'
 announcement_time_class = 'text-left'
@@ -79,9 +89,14 @@ try:
             announcement_hash = sha256(announcement.text.encode('utf-8')).hexdigest()
             cache_file_path = os.path.join(application_data_dir, announcement_hash)
             if not os.path.isfile(cache_file_path):
-                with open(cache_file_path, "w") as cache_file:
-                    cache_file.writelines(announcement.text.strip())
+                try:
+                    with open(cache_file_path, "w") as cache_file:
+                        cache_file.writelines(announcement.text.strip())
+                    # Only queue announcement if cache write succeeded
                     announcement_queue.append(format_announcement(announcement))
+                except Exception as e:
+                    logging.error(f'Failed to write cache file {cache_file_path}: {e}')
+                    logging.warning(f'Skipping announcement {announcement_hash} due to cache write failure')
             else:
                 logging.debug('ASDW Announcement already sent: ' + announcement_hash)
 
