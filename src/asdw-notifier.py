@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 import sys
@@ -78,6 +79,10 @@ s: Session = Session()
 s.headers.update({'If-Modified-Since': get_formatted_last_announcement_time()})
 announcement_queue: list[str] = []
 
+# Capture fetch datetime (UTC ISO format) for cache metadata
+fetch_datetime: str = dt.now(timezone.utc).isoformat()
+fetch_date: str = fetch_datetime[:10]  # Extract YYYY-MM-DD for hash
+
 try:
     response = s.get(asdw_announcement_url, timeout=http_timeout)
 
@@ -85,11 +90,16 @@ try:
         soup = BeautifulSoup(response.text, 'html.parser')
         announcements = soup.find_all(announcement_selector)
         for announcement in announcements:
-            announcement_hash: str = sha256(announcement.text.encode('utf-8')).hexdigest()
+            # Include fetch date in hash to treat identical announcements on different days as unique
+            announcement_hash: str = sha256((announcement.text + fetch_date).encode('utf-8')).hexdigest()
             cache_file_path: Path = application_data_dir / announcement_hash
             if not cache_file_path.is_file():
                 try:
-                    cache_file_path.write_text(announcement.text.strip())
+                    cache_data = {
+                        "text": announcement.text.strip(),
+                        "fetch_datetime": fetch_datetime
+                    }
+                    cache_file_path.write_text(json.dumps(cache_data, indent=2))
                     # Only queue announcement if cache write succeeded
                     announcement_queue.append(format_announcement(announcement))
                 except Exception as e:
