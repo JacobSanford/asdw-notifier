@@ -10,5 +10,6 @@ ENV ASDW_ANNOUNCEMENT_URL https://asdw.nbed.ca/news/alerts-dashboard/
 ENV DISCORD_WEBHOOK_URL https://discord.com/api/webhooks/1234567890/abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz
 ENV LOG_LEVEL 20
 ENV POLL_TIME 300
+ENV HTTP_TIMEOUT 30
 
 CMD [ "python", "./asdw-notifier.py" ]

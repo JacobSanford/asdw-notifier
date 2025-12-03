@@ -53,6 +53,7 @@ logging.basicConfig(
 application_data_dir = Path(config.application_data_dir)
 asdw_announcement_url = config.asdw_announcement_url
 discord_webhook_url = config.discord_webhook_url
+http_timeout = config.http_timeout
 
 # Ensure cache directory exists
 try:
@@ -80,7 +81,7 @@ s.headers.update(
 announcement_queue = []
 
 try:
-    response = s.get(asdw_announcement_url)
+    response = s.get(asdw_announcement_url, timeout=http_timeout)
 
     if response.ok:
         soup = BeautifulSoup(response.text, 'html.parser')

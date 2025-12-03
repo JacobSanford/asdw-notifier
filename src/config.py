@@ -20,6 +20,7 @@ DEFAULT_APPLICATION_DATA_DIR = '/data'
 DEFAULT_ASDW_ANNOUNCEMENT_URL = 'https://asdw.nbed.ca/news/alerts-dashboard/'
 DEFAULT_LOG_LEVEL = 20  # INFO
 DEFAULT_POLL_TIME = 300  # 5 minutes
+DEFAULT_HTTP_TIMEOUT = 30  # 30 seconds
 
 # Valid logging levels
 VALID_LOG_LEVELS = [10, 20, 30, 40, 50]  # DEBUG, INFO, WARNING, ERROR, CRITICAL
@@ -33,6 +34,7 @@ class Config:
     discord_webhook_url: str
     log_level: int
     poll_time: int
+    http_timeout: int
 
 
 def load_config() -> Config:
@@ -57,6 +59,7 @@ def load_config() -> Config:
     discord_webhook_url = os.environ.get('DISCORD_WEBHOOK_URL')
     log_level_str = os.environ.get('LOG_LEVEL', str(DEFAULT_LOG_LEVEL))
     poll_time_str = os.environ.get('POLL_TIME', str(DEFAULT_POLL_TIME))
+    http_timeout_str = os.environ.get('HTTP_TIMEOUT', str(DEFAULT_HTTP_TIMEOUT))
 
     # Validate APPLICATION_DATA_DIR
     dir_error = validate_directory(application_data_dir, 'APPLICATION_DATA_DIR')
@@ -106,6 +109,17 @@ def load_config() -> Config:
         if poll_warning:
             warnings.append(poll_warning)
 
+    # Validate HTTP_TIMEOUT
+    http_timeout, http_timeout_error = validate_int_range(
+        http_timeout_str,
+        'HTTP_TIMEOUT',
+        min_val=1,
+        max_val=300  # Max 5 minutes seems reasonable
+    )
+    if http_timeout_error:
+        errors.append(http_timeout_error)
+        http_timeout = DEFAULT_HTTP_TIMEOUT  # Use default for fallback
+
     # If any validation errors occurred, raise exception with all errors
     if errors:
         raise ConfigValidationError(errors)
@@ -122,5 +136,6 @@ def load_config() -> Config:
         asdw_announcement_url=asdw_announcement_url,
         discord_webhook_url=discord_webhook_url,
         log_level=log_level,
-        poll_time=poll_time
+        poll_time=poll_time,
+        http_timeout=http_timeout
     )
