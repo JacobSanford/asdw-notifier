@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 import sys
 
@@ -25,12 +24,13 @@ def get_formatted_last_announcement_time():
 
 def get_last_announcement_time():
     lastrun = 0
-    for filename in os.listdir(application_data_dir):
-        file_path = os.path.join(application_data_dir, filename)
-        if os.path.isfile(file_path):
-            modified_time = os.path.getmtime(file_path)
-            if modified_time > lastrun:
-                lastrun = modified_time
+    cache_dir = Path(application_data_dir)
+    if cache_dir.exists():
+        for file_path in cache_dir.iterdir():
+            if file_path.is_file():
+                modified_time = file_path.stat().st_mtime
+                if modified_time > lastrun:
+                    lastrun = modified_time
     return lastrun
 
 # Load and validate configuration
@@ -50,13 +50,13 @@ logging.basicConfig(
 )
 
 # Extract config values for backward compatibility with existing code
-application_data_dir = config.application_data_dir
+application_data_dir = Path(config.application_data_dir)
 asdw_announcement_url = config.asdw_announcement_url
 discord_webhook_url = config.discord_webhook_url
 
 # Ensure cache directory exists
 try:
-    os.makedirs(application_data_dir, exist_ok=True)
+    application_data_dir.mkdir(parents=True, exist_ok=True)
 except Exception as e:
     logging.error(f'Failed to create cache directory {application_data_dir}: {e}')
     print(f"ERROR: Cannot create cache directory: {e}", file=sys.stderr)
@@ -87,11 +87,10 @@ try:
         announcements = soup.find_all(announcement_selector)
         for announcement in announcements:
             announcement_hash = sha256(announcement.text.encode('utf-8')).hexdigest()
-            cache_file_path = os.path.join(application_data_dir, announcement_hash)
-            if not os.path.isfile(cache_file_path):
+            cache_file_path = application_data_dir / announcement_hash
+            if not cache_file_path.is_file():
                 try:
-                    with open(cache_file_path, "w") as cache_file:
-                        cache_file.writelines(announcement.text.strip())
+                    cache_file_path.write_text(announcement.text.strip())
                     # Only queue announcement if cache write succeeded
                     announcement_queue.append(format_announcement(announcement))
                 except Exception as e:
