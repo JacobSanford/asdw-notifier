@@ -3,7 +3,7 @@ import os
 import re
 
 from bs4 import BeautifulSoup
-from datetime import datetime as dt
+from datetime import datetime as dt, timezone
 from discord import SyncWebhook
 from hashlib import sha256
 from pathlib import Path
@@ -17,7 +17,7 @@ def format_announcement(announcement):
     return time + "\n" + formatted_content
 
 def get_formatted_last_announcement_time():
-    time_obj = dt.utcfromtimestamp(get_last_announcement_time())
+    time_obj = dt.fromtimestamp(get_last_announcement_time(), tz=timezone.utc)
     return time_obj.strftime('%a, %d %b %Y %H:%M:%S GMT')
 
 def get_last_announcement_time():
