@@ -59,6 +59,7 @@ application_data_dir: Path = Path(config.application_data_dir)
 asdw_announcement_url: str = config.asdw_announcement_url
 discord_webhook_url: str = config.discord_webhook_url
 http_timeout: int = config.http_timeout
+user_agent: str = config.user_agent
 announcement_selector: str = config.announcement_selector
 announcement_body_selector: str = config.announcement_body_selector
 announcement_time_class: str = config.announcement_time_class
@@ -76,7 +77,10 @@ except Exception as e:
 announcements_sent: bool = False
 
 s: Session = Session()
-s.headers.update({'If-Modified-Since': get_formatted_last_announcement_time()})
+s.headers.update({
+    'If-Modified-Since': get_formatted_last_announcement_time(),
+    'User-Agent': user_agent
+})
 announcement_queue: list[str] = []
 
 # Capture fetch datetime (UTC ISO format) for cache metadata

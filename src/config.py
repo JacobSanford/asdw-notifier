@@ -21,6 +21,7 @@ DEFAULT_ASDW_ANNOUNCEMENT_URL = 'https://asdw.nbed.ca/news/alerts-dashboard/'
 DEFAULT_LOG_LEVEL = 20  # INFO
 DEFAULT_POLL_TIME = 300  # 5 minutes
 DEFAULT_HTTP_TIMEOUT = 30  # 30 seconds
+DEFAULT_USER_AGENT = 'ASDW Status Notifier 0.1'
 
 # Default CSS selectors for announcement scraping
 DEFAULT_ANNOUNCEMENT_SELECTOR = 'article'
@@ -40,6 +41,7 @@ class Config:
     log_level: int
     poll_time: int
     http_timeout: int
+    user_agent: str
     announcement_selector: str
     announcement_body_selector: str
     announcement_time_class: str
@@ -68,6 +70,7 @@ def load_config() -> Config:
     log_level_str = os.environ.get('LOG_LEVEL', str(DEFAULT_LOG_LEVEL))
     poll_time_str = os.environ.get('POLL_TIME', str(DEFAULT_POLL_TIME))
     http_timeout_str = os.environ.get('HTTP_TIMEOUT', str(DEFAULT_HTTP_TIMEOUT))
+    user_agent = os.environ.get('USER_AGENT', DEFAULT_USER_AGENT)
 
     # CSS selectors for announcement scraping
     announcement_selector = os.environ.get('ANNOUNCEMENT_SELECTOR', DEFAULT_ANNOUNCEMENT_SELECTOR)
@@ -151,6 +154,7 @@ def load_config() -> Config:
         log_level=log_level,
         poll_time=poll_time,
         http_timeout=http_timeout,
+        user_agent=user_agent,
         announcement_selector=announcement_selector,
         announcement_body_selector=announcement_body_selector,
         announcement_time_class=announcement_time_class

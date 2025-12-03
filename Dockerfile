@@ -14,5 +14,6 @@ ENV DISCORD_WEBHOOK_URL https://discord.com/api/webhooks/1234567890/abcdefghijkl
 ENV HTTP_TIMEOUT 30
 ENV LOG_LEVEL 20
 ENV POLL_TIME 300
+ENV USER_AGENT "ASDW Status Notifier 0.1"
 
 CMD [ "python", "./asdw-notifier.py" ]
