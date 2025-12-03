@@ -26,19 +26,38 @@ git clone https://github.com/JacobSanford/asdw-notifier.git
 cd asdw-notifier
 ```
 
-### 3. Add Hook to asdw-notifier Configuration
+### 3. Configure Environment Variables
 
-Edit the ```env/asdw.env``` file and enter your webhook under DISCORD_WEBHOOK_URL.
+Edit `env/asdw.env` and set your Discord webhook URL. Optional variables can be customized as needed.
+
+#### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DISCORD_WEBHOOK_URL` | Yes | - | Discord webhook URL for notifications |
+| `APPLICATION_DATA_DIR` | No | `/data` | Container data dir / cache directory. See docker-compose.yaml for use. |
+| `ASDW_ANNOUNCEMENT_URL` | No | `https://asdw.nbed.ca/news/alerts-dashboard/` | Announcement page URL |
+| `LOG_LEVEL` | No | `20` (INFO) | Logging level (10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL) |
+| `POLL_TIME` | No | `300` | Seconds between checking announcements |
+| `HTTP_TIMEOUT` | No | `30` | Timeout in seconds for all HTTP requests |
+| `ANNOUNCEMENT_SELECTOR` | No | `article` | CSS selector for announcement wrapper |
+| `ANNOUNCEMENT_BODY_SELECTOR` | No | `p` | CSS selector for announcement body |
+| `ANNOUNCEMENT_TIME_CLASS` | No | `text-left` | CSS class for announcement time |
 
 ### 4. Run Application
 
 ```bash
 docker compose up -d
+docker compose logs -f
 ```
 
-The application will query the URL every POLLING_TIME seconds.
+The application queries the URL every `POLL_TIME` seconds, then sleeps, terminates, and restarts (via `restart: unless-stopped` in docker-compose.yml).
 
-Specifically, it will sleep for POLLING_TIME seconds after query, terminate and restart based on the ```restart: always``` entry in its docker-compose.yml.
+## Data Storge / Cache
+
+- Announcements are cached per day to prevent duplicate notifications
+- Cache files are stored as JSON in `APPLICATION_DATA_DIR` with format: `{"text": "...", "fetch_datetime": "2025-12-03T10:30:45+00:00"}`
+- Identical announcements on different days are treated as unique and sent
 
 ## Background
 
