@@ -22,6 +22,11 @@ DEFAULT_LOG_LEVEL = 20  # INFO
 DEFAULT_POLL_TIME = 300  # 5 minutes
 DEFAULT_HTTP_TIMEOUT = 30  # 30 seconds
 
+# Default CSS selectors for announcement scraping
+DEFAULT_ANNOUNCEMENT_SELECTOR = 'article'
+DEFAULT_ANNOUNCEMENT_BODY_SELECTOR = 'p'
+DEFAULT_ANNOUNCEMENT_TIME_CLASS = 'text-left'
+
 # Valid logging levels
 VALID_LOG_LEVELS = [10, 20, 30, 40, 50]  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
@@ -35,6 +40,9 @@ class Config:
     log_level: int
     poll_time: int
     http_timeout: int
+    announcement_selector: str
+    announcement_body_selector: str
+    announcement_time_class: str
 
 
 def load_config() -> Config:
@@ -60,6 +68,11 @@ def load_config() -> Config:
     log_level_str = os.environ.get('LOG_LEVEL', str(DEFAULT_LOG_LEVEL))
     poll_time_str = os.environ.get('POLL_TIME', str(DEFAULT_POLL_TIME))
     http_timeout_str = os.environ.get('HTTP_TIMEOUT', str(DEFAULT_HTTP_TIMEOUT))
+
+    # CSS selectors for announcement scraping
+    announcement_selector = os.environ.get('ANNOUNCEMENT_SELECTOR', DEFAULT_ANNOUNCEMENT_SELECTOR)
+    announcement_body_selector = os.environ.get('ANNOUNCEMENT_BODY_SELECTOR', DEFAULT_ANNOUNCEMENT_BODY_SELECTOR)
+    announcement_time_class = os.environ.get('ANNOUNCEMENT_TIME_CLASS', DEFAULT_ANNOUNCEMENT_TIME_CLASS)
 
     # Validate APPLICATION_DATA_DIR
     dir_error = validate_directory(application_data_dir, 'APPLICATION_DATA_DIR')
@@ -137,5 +150,8 @@ def load_config() -> Config:
         discord_webhook_url=discord_webhook_url,
         log_level=log_level,
         poll_time=poll_time,
-        http_timeout=http_timeout
+        http_timeout=http_timeout,
+        announcement_selector=announcement_selector,
+        announcement_body_selector=announcement_body_selector,
+        announcement_time_class=announcement_time_class
     )

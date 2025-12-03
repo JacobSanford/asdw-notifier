@@ -58,6 +58,9 @@ application_data_dir: Path = Path(config.application_data_dir)
 asdw_announcement_url: str = config.asdw_announcement_url
 discord_webhook_url: str = config.discord_webhook_url
 http_timeout: int = config.http_timeout
+announcement_selector: str = config.announcement_selector
+announcement_body_selector: str = config.announcement_body_selector
+announcement_time_class: str = config.announcement_time_class
 
 # Ensure cache directory exists
 try:
@@ -68,10 +71,6 @@ except Exception as e:
     print("Sleeping 60 seconds before exit to prevent rapid restart loop...", file=sys.stderr)
     sleep(60)
     sys.exit(1)
-
-announcement_selector: str = 'article'
-announcement_body_selector: str = 'p'
-announcement_time_class: str = 'text-left'
 
 announcements_sent: bool = False
 
