@@ -49,28 +49,33 @@ s.headers.update(
         'User-Agent': 'ASDW Announcement Notifier v1.0'
     }
 )
-response = s.get(asdw_announcement_url)
 announcement_queue = []
 
-if response.ok:
-    soup = BeautifulSoup(response.text, 'html.parser')
-    announcements = soup.find_all(announcement_selector)
-    for announcement in announcements:
-        announcement_hash = sha256(announcement.text.encode('utf-8')).hexdigest()
-        cache_file_path = os.path.join(application_data_dir, announcement_hash)
-        if not os.path.isfile(cache_file_path):
-            with open(cache_file_path, "w") as cache_file:
-                cache_file.writelines(announcement.text.strip())
-                announcement_queue.append(format_announcement(announcement))
-        else:
-            logging.debug('ASDW Announcement already sent: ' + announcement_hash)
+try:
+    response = s.get(asdw_announcement_url)
 
-if announcement_queue:
-    discord_webhook = SyncWebhook.from_url(discord_webhook_url)
-    for announcement_content in announcement_queue:
-        logging.info('Sending ASDW announcement notification')
-        discord_webhook.send(announcement_content)
-else:
-    logging.info('No new ASDW announcements!')
+    if response.ok:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        announcements = soup.find_all(announcement_selector)
+        for announcement in announcements:
+            announcement_hash = sha256(announcement.text.encode('utf-8')).hexdigest()
+            cache_file_path = os.path.join(application_data_dir, announcement_hash)
+            if not os.path.isfile(cache_file_path):
+                with open(cache_file_path, "w") as cache_file:
+                    cache_file.writelines(announcement.text.strip())
+                    announcement_queue.append(format_announcement(announcement))
+            else:
+                logging.debug('ASDW Announcement already sent: ' + announcement_hash)
+
+    if announcement_queue:
+        discord_webhook = SyncWebhook.from_url(discord_webhook_url)
+        for announcement_content in announcement_queue:
+            logging.info('Sending ASDW announcement notification')
+            discord_webhook.send(announcement_content)
+    else:
+        logging.info('No new ASDW announcements!')
+
+except Exception as e:
+    logging.error(f'Error requesting URL: {e}')
 
 sleep(int(os.environ.get('POLL_TIME')))
