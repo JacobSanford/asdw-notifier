@@ -3,6 +3,7 @@ import re
 import sys
 
 from bs4 import BeautifulSoup
+from bs4.element import Tag
 from datetime import datetime as dt, timezone
 from discord import SyncWebhook
 from hashlib import sha256
@@ -12,23 +13,26 @@ from time import sleep
 
 from config import load_config, ConfigValidationError
 
-def format_announcement(announcement):
+def format_announcement(announcement: Tag) -> str:
+    """Format an announcement by extracting time and content."""
     time = announcement.find(class_=announcement_time_class).text.strip()
     content = announcement.find(announcement_body_selector).text.strip()
     formatted_content = re.sub(r'\n\s*\n', '\n', content, flags=re.MULTILINE)
     return time + "\n" + formatted_content
 
-def get_formatted_last_announcement_time():
+def get_formatted_last_announcement_time() -> str:
+    """Get the last announcement time formatted as HTTP date string."""
     time_obj = dt.fromtimestamp(get_last_announcement_time(), tz=timezone.utc)
     return time_obj.strftime('%a, %d %b %Y %H:%M:%S GMT')
 
-def get_last_announcement_time():
-    lastrun = 0
+def get_last_announcement_time() -> float:
+    """Get the most recent file modification time from cache directory."""
+    lastrun: float = 0
     cache_dir = Path(application_data_dir)
     if cache_dir.exists():
         for file_path in cache_dir.iterdir():
             if file_path.is_file():
-                modified_time = file_path.stat().st_mtime
+                modified_time: float = file_path.stat().st_mtime
                 if modified_time > lastrun:
                     lastrun = modified_time
     return lastrun
@@ -50,10 +54,10 @@ logging.basicConfig(
 )
 
 # Extract config values for backward compatibility with existing code
-application_data_dir = Path(config.application_data_dir)
-asdw_announcement_url = config.asdw_announcement_url
-discord_webhook_url = config.discord_webhook_url
-http_timeout = config.http_timeout
+application_data_dir: Path = Path(config.application_data_dir)
+asdw_announcement_url: str = config.asdw_announcement_url
+discord_webhook_url: str = config.discord_webhook_url
+http_timeout: int = config.http_timeout
 
 # Ensure cache directory exists
 try:
@@ -65,20 +69,15 @@ except Exception as e:
     sleep(60)
     sys.exit(1)
 
-announcement_selector = 'article'
-announcement_body_selector = 'p'
-announcement_time_class = 'text-left'
+announcement_selector: str = 'article'
+announcement_body_selector: str = 'p'
+announcement_time_class: str = 'text-left'
 
-announcements_sent = False
+announcements_sent: bool = False
 
-s = Session()
-s.headers.update(
-    {
-        'If-Modified-Since': get_formatted_last_announcement_time(),
-        'User-Agent': 'ASDW Announcement Notifier v1.0'
-    }
-)
-announcement_queue = []
+s: Session = Session()
+s.headers.update({'If-Modified-Since': get_formatted_last_announcement_time()})
+announcement_queue: list[str] = []
 
 try:
     response = s.get(asdw_announcement_url, timeout=http_timeout)
@@ -87,8 +86,8 @@ try:
         soup = BeautifulSoup(response.text, 'html.parser')
         announcements = soup.find_all(announcement_selector)
         for announcement in announcements:
-            announcement_hash = sha256(announcement.text.encode('utf-8')).hexdigest()
-            cache_file_path = application_data_dir / announcement_hash
+            announcement_hash: str = sha256(announcement.text.encode('utf-8')).hexdigest()
+            cache_file_path: Path = application_data_dir / announcement_hash
             if not cache_file_path.is_file():
                 try:
                     cache_file_path.write_text(announcement.text.strip())
@@ -101,7 +100,7 @@ try:
                 logging.debug('ASDW Announcement already sent: ' + announcement_hash)
 
     if announcement_queue:
-        discord_webhook = SyncWebhook.from_url(discord_webhook_url)
+        discord_webhook: SyncWebhook = SyncWebhook.from_url(discord_webhook_url)
         for announcement_content in announcement_queue:
             try:
                 logging.info('Sending ASDW announcement notification')
