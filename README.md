@@ -35,14 +35,15 @@ Edit `env/asdw.env` and set your Discord webhook URL. Optional variables can be 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `DISCORD_WEBHOOK_URL` | Yes | - | Discord webhook URL for notifications |
-| `APPLICATION_DATA_DIR` | No | `/data` | Container data dir / cache directory. See docker-compose.yaml for use. |
-| `ASDW_ANNOUNCEMENT_URL` | No | `https://asdw.nbed.ca/news/alerts-dashboard/` | Announcement page URL |
-| `LOG_LEVEL` | No | `20` (INFO) | Logging level (10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL) |
-| `POLL_TIME` | No | `300` | Seconds between checking announcements |
-| `HTTP_TIMEOUT` | No | `30` | Timeout in seconds for all HTTP requests |
 | `ANNOUNCEMENT_SELECTOR` | No | `article` | CSS selector for announcement wrapper |
 | `ANNOUNCEMENT_BODY_SELECTOR` | No | `p` | CSS selector for announcement body |
 | `ANNOUNCEMENT_TIME_CLASS` | No | `text-left` | CSS class for announcement time |
+| `APPLICATION_DATA_DIR` | No | `/data` | Container data dir / cache directory. See docker-compose.yaml for use. |
+| `ASDW_ANNOUNCEMENT_URL` | No | `https://asdw.nbed.ca/news/alerts-dashboard/` | Announcement page URL |
+| `HTTP_TIMEOUT` | No | `30` | Timeout in seconds for all HTTP requests |
+| `LOG_LEVEL` | No | `20` (INFO) | Logging level (10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL) |
+| `POLL_TIME` | No | `300` | Seconds between checking announcements |
+| `USER_AGENT` | No | `ASDW Status Notifier 0.1` | User-Agent header for HTTP requests |
 
 ### 4. Run Application
 
