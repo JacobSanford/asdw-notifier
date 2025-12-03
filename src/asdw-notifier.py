@@ -88,8 +88,12 @@ try:
     if announcement_queue:
         discord_webhook = SyncWebhook.from_url(discord_webhook_url)
         for announcement_content in announcement_queue:
-            logging.info('Sending ASDW announcement notification')
-            discord_webhook.send(announcement_content)
+            try:
+                logging.info('Sending ASDW announcement notification')
+                discord_webhook.send(announcement_content)
+            except Exception as e:
+                logging.error(f'Failed to send Discord webhook notification: {e}')
+                logging.debug(f'Failed announcement content: {announcement_content[:100]}...')
     else:
         logging.info('No new ASDW announcements!')
 
