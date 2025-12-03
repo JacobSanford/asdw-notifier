@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import sys
 
 from bs4 import BeautifulSoup
 from datetime import datetime as dt, timezone
@@ -9,6 +10,8 @@ from hashlib import sha256
 from pathlib import Path
 from requests import Session
 from time import sleep
+
+from config import load_config, ConfigValidationError
 
 def format_announcement(announcement):
     time = announcement.find(class_=announcement_time_class).text.strip()
@@ -30,15 +33,26 @@ def get_last_announcement_time():
                 lastrun = modified_time
     return lastrun
 
+# Load and validate configuration
+try:
+    config = load_config()
+except ConfigValidationError as e:
+    print(f"ERROR: {e}", file=sys.stderr)
+    print("Sleeping 60 seconds before exit to prevent rapid restart loop...", file=sys.stderr)
+    sleep(60)
+    sys.exit(1)
+
+# Configure logging with validated log level
 logging.basicConfig(
-    level=int(os.environ.get('LOG_LEVEL')),
+    level=config.log_level,
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%dT%H:%M:%S'
 )
 
-application_data_dir = os.environ.get('APPLICATION_DATA_DIR')
-asdw_announcement_url = os.environ.get('ASDW_ANNOUNCEMENT_URL')
-discord_webhook_url = os.environ.get('DISCORD_WEBHOOK_URL')
+# Extract config values for backward compatibility with existing code
+application_data_dir = config.application_data_dir
+asdw_announcement_url = config.asdw_announcement_url
+discord_webhook_url = config.discord_webhook_url
 
 announcement_selector = 'article'
 announcement_body_selector = 'p'
@@ -82,4 +96,4 @@ try:
 except Exception as e:
     logging.error(f'Error requesting URL: {e}')
 
-sleep(int(os.environ.get('POLL_TIME')))
+sleep(config.poll_time)
