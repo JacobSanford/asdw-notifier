@@ -5,4 +5,4 @@ services:
       - ./data:/data
     env_file:
       - env/asdw.env
-    restart: always
+    restart: unless-stopped
