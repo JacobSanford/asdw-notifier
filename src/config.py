@@ -9,7 +9,7 @@ from validators import (
     ConfigValidationError,
     validate_directory,
     validate_url,
-    validate_discord_webhook_url,
+    validate_discord_webhook_urls,
     validate_int_range,
     get_validation_warning
 )
@@ -37,7 +37,7 @@ class Config:
     """Application configuration loaded from environment variables."""
     application_data_dir: str
     asdw_announcement_url: str
-    discord_webhook_url: str
+    discord_webhook_urls: list[str]
     log_level: int
     poll_time: int
     http_timeout: int
@@ -66,7 +66,7 @@ def load_config() -> Config:
     # Get raw values with defaults
     application_data_dir = os.environ.get('APPLICATION_DATA_DIR', DEFAULT_APPLICATION_DATA_DIR)
     asdw_announcement_url = os.environ.get('ASDW_ANNOUNCEMENT_URL', DEFAULT_ASDW_ANNOUNCEMENT_URL)
-    discord_webhook_url = os.environ.get('DISCORD_WEBHOOK_URL')
+    discord_webhook_urls_str = os.environ.get('DISCORD_WEBHOOK_URLS')
     log_level_str = os.environ.get('LOG_LEVEL', str(DEFAULT_LOG_LEVEL))
     poll_time_str = os.environ.get('POLL_TIME', str(DEFAULT_POLL_TIME))
     http_timeout_str = os.environ.get('HTTP_TIMEOUT', str(DEFAULT_HTTP_TIMEOUT))
@@ -87,13 +87,15 @@ def load_config() -> Config:
     if url_error:
         errors.append(url_error)
 
-    # Validate DISCORD_WEBHOOK_URL (required, no default)
-    if not discord_webhook_url:
-        errors.append("DISCORD_WEBHOOK_URL: Required environment variable is not set")
+    # Validate DISCORD_WEBHOOK_URLS (required, no default)
+    if not discord_webhook_urls_str:
+        errors.append("DISCORD_WEBHOOK_URLS: Required environment variable is not set")
+        discord_webhook_urls = []
     else:
-        webhook_error = validate_discord_webhook_url(discord_webhook_url, 'DISCORD_WEBHOOK_URL')
+        discord_webhook_urls, webhook_error = validate_discord_webhook_urls(discord_webhook_urls_str, 'DISCORD_WEBHOOK_URLS')
         if webhook_error:
             errors.append(webhook_error)
+            discord_webhook_urls = []
 
     # Validate LOG_LEVEL
     log_level, log_level_error = validate_int_range(
@@ -150,7 +152,7 @@ def load_config() -> Config:
     return Config(
         application_data_dir=application_data_dir,
         asdw_announcement_url=asdw_announcement_url,
-        discord_webhook_url=discord_webhook_url,
+        discord_webhook_urls=discord_webhook_urls,
         log_level=log_level,
         poll_time=poll_time,
         http_timeout=http_timeout,

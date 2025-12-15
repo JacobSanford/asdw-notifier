@@ -1,6 +1,7 @@
 """
 Validation functions for environment variables.
 """
+import json
 import os
 from pathlib import Path
 from typing import Optional
@@ -100,6 +101,48 @@ def validate_discord_webhook_url(value: str, var_name: str) -> Optional[str]:
         return f"{var_name}: Discord webhook URL must be from discord.com domain, got: '{parsed.netloc}'"
 
     return None
+
+
+def validate_discord_webhook_urls(value: str, var_name: str) -> tuple[Optional[list[str]], Optional[str]]:
+    """
+    Validate a JSON array of Discord webhook URLs.
+
+    Args:
+        value: JSON array string containing webhook URLs
+        var_name: Name of the environment variable (for error messages)
+
+    Returns:
+        Tuple of (list_of_urls, error_message)
+        If validation succeeds: (urls_list, None)
+        If validation fails: (None, error_message)
+    """
+    if not value:
+        return None, f"{var_name}: Value cannot be empty"
+
+    try:
+        urls = json.loads(value)
+    except json.JSONDecodeError as e:
+        return None, f"{var_name}: Invalid JSON format - {e}"
+
+    if not isinstance(urls, list):
+        return None, f"{var_name}: Must be a JSON array, got: {type(urls).__name__}"
+
+    if len(urls) == 0:
+        return None, f"{var_name}: Array cannot be empty, at least one webhook URL is required"
+
+    errors = []
+    for i, url in enumerate(urls):
+        if not isinstance(url, str):
+            errors.append(f"  [{i}]: Must be a string, got: {type(url).__name__}")
+            continue
+        url_error = validate_discord_webhook_url(url, f"{var_name}[{i}]")
+        if url_error:
+            errors.append(f"  [{i}]: {url_error.split(': ', 1)[1]}")
+
+    if errors:
+        return None, f"{var_name}: Invalid webhook URL(s):\n" + "\n".join(errors)
+
+    return urls, None
 
 
 def validate_int_range(value: str, var_name: str, min_val: int = None,

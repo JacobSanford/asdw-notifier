@@ -57,7 +57,7 @@ logging.basicConfig(
 # Extract config values for backward compatibility with existing code
 application_data_dir: Path = Path(config.application_data_dir)
 asdw_announcement_url: str = config.asdw_announcement_url
-discord_webhook_url: str = config.discord_webhook_url
+discord_webhook_urls: list[str] = config.discord_webhook_urls
 http_timeout: int = config.http_timeout
 user_agent: str = config.user_agent
 announcement_selector: str = config.announcement_selector
@@ -113,14 +113,15 @@ try:
                 logging.debug('ASDW Announcement already sent: ' + announcement_hash)
 
     if announcement_queue:
-        discord_webhook: SyncWebhook = SyncWebhook.from_url(discord_webhook_url)
-        for announcement_content in announcement_queue:
-            try:
-                logging.info('Sending ASDW announcement notification')
-                discord_webhook.send(announcement_content)
-            except Exception as e:
-                logging.error(f'Failed to send Discord webhook notification: {e}')
-                logging.debug(f'Failed announcement content: {announcement_content[:100]}...')
+        for webhook_url in discord_webhook_urls:
+            discord_webhook: SyncWebhook = SyncWebhook.from_url(webhook_url)
+            for announcement_content in announcement_queue:
+                try:
+                    logging.info(f'Sending ASDW announcement notification to webhook')
+                    discord_webhook.send(announcement_content)
+                except Exception as e:
+                    logging.error(f'Failed to send Discord webhook notification: {e}')
+                    logging.debug(f'Failed announcement content: {announcement_content[:100]}...')
     else:
         logging.info('No new ASDW announcements!')
 

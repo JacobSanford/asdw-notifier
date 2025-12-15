@@ -15,9 +15,9 @@ You must have the following tools available for use from the command line:
 
 ## Getting Started
 
-### 1. Create a Discord Webhook
+### 1. Create Discord Webhook(s)
 
-See 'Create a Webhook' section at https://docs.gitlab.com/ee/user/project/integrations/discord_notifications.html#create-webhook.
+Create one or more Discord webhooks. See 'Create a Webhook' section at https://docs.gitlab.com/ee/user/project/integrations/discord_notifications.html#create-webhook.
 
 ### 2. Clone this Repository
 
@@ -28,13 +28,13 @@ cd asdw-notifier
 
 ### 3. Configure Environment Variables
 
-Edit `env/asdw.env` and set your Discord webhook URL. Optional variables can be customized as needed.
+Edit `env/asdw.env` and set your Discord webhook URL(s). Optional variables can be customized as needed.
 
 #### Environment Variables
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `DISCORD_WEBHOOK_URL` | Yes | - | Discord webhook URL for notifications |
+| `DISCORD_WEBHOOK_URLS` | Yes | - | JSON array of Discord webhook URLs (e.g., `["https://discord.com/api/webhooks/..."]`) |
 | `ANNOUNCEMENT_SELECTOR` | No | `article` | CSS selector for announcement wrapper |
 | `ANNOUNCEMENT_BODY_SELECTOR` | No | `p` | CSS selector for announcement body |
 | `ANNOUNCEMENT_TIME_CLASS` | No | `text-left` | CSS class for announcement time |
