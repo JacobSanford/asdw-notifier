@@ -97,8 +97,9 @@ def validate_discord_webhook_url(value: str, var_name: str) -> Optional[str]:
         return f"{var_name}: Discord webhook URL must contain '/api/webhooks/', got: '{value}'"
 
     parsed = urlparse(value)
-    if 'discord.com' not in parsed.netloc:
-        return f"{var_name}: Discord webhook URL must be from discord.com domain, got: '{parsed.netloc}'"
+    valid_domains = ('discord.com', 'discordapp.com')
+    if not any(domain in parsed.netloc for domain in valid_domains):
+        return f"{var_name}: Discord webhook URL must be from discord.com or discordapp.com domain, got: '{parsed.netloc}'"
 
     return None
 
