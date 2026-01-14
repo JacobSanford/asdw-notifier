@@ -85,7 +85,8 @@ announcement_queue: list[str] = []
 
 # Capture fetch datetime (UTC ISO format) for cache metadata
 fetch_datetime: str = dt.now(timezone.utc).isoformat()
-fetch_date: str = fetch_datetime[:10]  # Extract YYYY-MM-DD for hash
+# Use local date for hash to prevent duplicate notifications across timezone boundaries
+fetch_date: str = dt.now().strftime('%Y-%m-%d')
 
 try:
     response = s.get(asdw_announcement_url, timeout=http_timeout)
