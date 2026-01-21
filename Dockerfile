@@ -1,5 +1,7 @@
 FROM python:3.12
 
+ENV TZ=America/Halifax
+
 COPY src/ /usr/src/app/
 
 WORKDIR /usr/src/app
