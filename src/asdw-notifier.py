@@ -85,8 +85,6 @@ announcement_queue: list[str] = []
 
 # Capture fetch datetime (UTC ISO format) for cache metadata
 fetch_datetime: str = dt.now(timezone.utc).isoformat()
-# Use local date for hash to prevent duplicate notifications across timezone boundaries
-fetch_date: str = dt.now().strftime('%Y-%m-%d')
 
 try:
     response = s.get(asdw_announcement_url, timeout=http_timeout)
@@ -95,8 +93,7 @@ try:
         soup = BeautifulSoup(response.text, 'html.parser')
         announcements = soup.find_all(announcement_selector)
         for announcement in announcements:
-            # Include fetch date in hash to treat identical announcements on different days as unique
-            announcement_hash: str = sha256((announcement.text + fetch_date).encode('utf-8')).hexdigest()
+            announcement_hash: str = sha256(announcement.text.encode('utf-8')).hexdigest()
             cache_file_path: Path = application_data_dir / announcement_hash
             if not cache_file_path.is_file():
                 try:

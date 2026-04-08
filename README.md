@@ -56,9 +56,8 @@ The application queries the URL every `POLL_TIME` seconds, then sleeps, terminat
 
 ## Data Storge / Cache
 
-- Announcements are cached per day to prevent duplicate notifications
+- Announcements are cached to prevent duplicate notifications
 - Cache files are stored as JSON in `APPLICATION_DATA_DIR` with format: `{"text": "...", "fetch_datetime": "2025-12-03T10:30:45+00:00"}`
-- Identical announcements on different days are treated as unique and sent
 
 ## Background
 
